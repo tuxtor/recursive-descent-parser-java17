@@ -17,42 +17,69 @@ public class RDP {
     }
 
     private boolean term(TokenConstants tok){
+        if(cursor >= tokens.size()){
+            return false;
+        }
         return tokens.get(cursor++).getTokenType().equals(tok);
     }
 
-    private boolean E1(){ // E -> T
-        return T();
+    private boolean E(){
+        return T() && X();
     }
 
-    private boolean E2(){ // E -> E + T
-        return T() && term(TokenConstants.PLUS) && E();
+
+    private boolean X1(){ // X -> + E
+        return term(TokenConstants.PLUS) && E();
     }
 
-    private boolean E(){ // E -> E - T
+    private boolean X2(){ // X -> Epsilon
+        return true;
+    }
+
+    private boolean X(){ // E -> E - T
         int cursorSave = cursor;
         //Backtrack
         cursor = cursorSave;
-        if(E1()){
+        if(X1()){
             return true;
         }
         //|| - OR
         cursor = cursorSave;
-        if(E2()){
+        if(X2()){
             return true;
         }
 
         return false;
     }
 
-    private boolean T1(){ // T -> int
-        return term(TokenConstants.NUMBER);
+    private boolean Y1(){ // Y -> * T
+        return term(TokenConstants.TIMES) && T();
     }
 
-    private boolean T2(){ // T -> int * T
-        return term(TokenConstants.NUMBER) && term(TokenConstants.TIMES) &&  T();
+    private boolean Y2(){ // Y -> Epsilon
+        return true;
     }
 
-    private boolean T3(){ // T -> ( T )
+    private boolean Y(){
+        int cursorSave = cursor;
+        //Backtrack
+        cursor = cursorSave;
+        if(Y1()){
+            return true;
+        }
+        //|| - OR
+        cursor = cursorSave;
+        if(Y2()){
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean T1(){ // T -> NUMBER Y
+        return term(TokenConstants.NUMBER) && Y();
+    }
+    private boolean T2(){ // T -> ( E )
         return term(TokenConstants.LPAREN) && E() && term(TokenConstants.RPAREN);
     }
 
@@ -68,13 +95,9 @@ public class RDP {
         if(T2()){
             return true;
         }
-        //|| - OR
-        cursor = cursorSave;
-        if(T3()){
-            return true;
-        }
 
         return false;
     }
+
 
 }
